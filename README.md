@@ -1,6 +1,6 @@
 # Simulations!
 
-A collection of simulations built using signal processing techniques in Python.
+A collection of simulations built using signal processing techniques in Python & MATLAB.
 
 ## 📦 Installation
 
