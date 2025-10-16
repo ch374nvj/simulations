@@ -8,8 +8,12 @@ fo = 90; % Hz
 
 %% Loop filter
 
-Kp = 50;
-Ki = 100;
-
-t1 = tf([Kp Ki],[1 0])
-bode(t1)
+Kp = 1;
+Ki = 1e+4;
+fc = 300;
+Wc = 2*pi*fc;
+tau = 1/Wc;
+%%
+t1 = tf([Kp Ki],[1 Wc 0])
+bp = bodeplot(t1)
+bp.FrequencyUnit = "Hz";
