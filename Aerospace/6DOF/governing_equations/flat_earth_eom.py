@@ -36,7 +36,6 @@ def flat_earth_eom(t: float, x: np.ndarray, u: np.ndarray, amod: dict, vmod) -> 
         ndarray: dx - Time derivative of each state in x
     """
     dx = np.zeros(12)
-    u_deg = u*[1,1,1,1/57.3]*57.3 #Multiplying only surfaces deflections by 57.3
 
     # Assign current state vols to variables 
     u_b_mps   = x[0]  
@@ -108,14 +107,14 @@ def flat_earth_eom(t: float, x: np.ndarray, u: np.ndarray, amod: dict, vmod) -> 
     gy_b_mps2 = s_phi * c_theta * gz_n_mps2
     gz_b_mps2 = c_phi * c_theta * gz_n_mps2
 
-    # Aerodynamic forces
-    CD = vmod.CD(alpha_deg, u_deg)
-    CY = vmod.CY(beta_deg, u_deg)
-    CL = vmod.CL(alpha_deg, u_deg)
+    # Update states to vehicle model for following computations
+    vmod.state_update(alpha_rad, beta_rad, c_interp_mps, qbar_kgpm2, 
+                     TAS_mps, p_b_rps, q_b_rps, r_b_rps, u)
 
-    drag_kgmps2 = CD*qbar_kgpm2*vmod.Aref_m2
-    side_kgmps2 = CY*qbar_kgpm2*vmod.Aref_m2
-    lift_kgmps2 = CL*qbar_kgpm2*vmod.Aref_m2
+    # Aerodynamic forces
+    drag_kgmps2 = vmod.drag_kgmps2()
+    side_kgmps2 = vmod.side_kgmps2()
+    lift_kgmps2 = vmod.lift_kgmps2()
 
     # External Forces
     # C_w/b
@@ -132,16 +131,16 @@ def flat_earth_eom(t: float, x: np.ndarray, u: np.ndarray, amod: dict, vmod) -> 
     Fy_b_kgmps2,
     Fz_b_kgmps2] = F_b_A.flatten().tolist()
 
-    Fx_b_kgmps2 += u[3]*vmod.T_max_N
+    F_b_thrust_N = vmod.F_b_thrust_N()
+
+    Fx_b_kgmps2 += F_b_thrust_N[0]
+    Fy_b_kgmps2 += F_b_thrust_N[1]
+    Fz_b_kgmps2 += F_b_thrust_N[2]
 
     # External moments
-    Clm = vmod.Clm(alpha_deg, beta_deg, u_deg, TAS_mps, p_b_rps, r_b_rps)
-    Cm = vmod.Cm(alpha_deg, u_deg, TAS_mps, q_b_rps)
-    Cn = vmod.Cn(alpha_deg, beta_deg, u_deg, TAS_mps, p_b_rps, r_b_rps)
-
-    l_b_kgm2ps2 = qbar_kgpm2*vmod.Aref_m2*vmod.b_m*Clm
-    m_b_kgm2ps2 = qbar_kgpm2*vmod.Aref_m2*vmod.c_m*Cm
-    n_b_kgm2ps2 = qbar_kgpm2*vmod.Aref_m2*vmod.b_m*Cn
+    [l_b_kgm2ps2, 
+     m_b_kgm2ps2, 
+     n_b_kgm2ps2] = vmod.moments_body_kgm2ps2()
 
     # EOM
     # Translational Eqs

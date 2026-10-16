@@ -6,3 +6,4 @@
 *.prof
 *.code-workspace
 __pycache__/
+.vscode

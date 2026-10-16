@@ -20,7 +20,9 @@ References:
         vehicles with state constraints, Control Engineering Practice (2020)
 """
 
-class AHV_model:
+from fixed_wing import FixedWing
+
+class AHV_model(FixedWing):
     def __init__(self) -> None:
         self.m_kg = 136080
         self.Aref_m2 = 334.73
@@ -49,7 +51,7 @@ class AHV_model:
     def model_update(self, TAS, c):
         self.M = TAS/c
 
-    def CD(self, alpha_deg, u_deg) ->  float:
+    def _CD(self, alpha_deg, u_deg) ->  float:
         Cd_alpha = 8.717e-2 - 3.307e-2 * self.M + 3.179e-2 * alpha_deg + 5.036e-3 * self.M ** 2
         Cd_del_e = 0
         Cd_del_a = 0
@@ -58,7 +60,7 @@ class AHV_model:
         Cd = Cd_alpha + Cd_del_e + Cd_del_a + Cd_del_r
         return Cd
 
-    def CL(self, alpha_deg, u_deg) -> float:
+    def _CL(self, alpha_deg, u_deg) -> float:
         Cl_alpha = -8.19e-2 + 4.7e-2 * self.M + 1.86e-2 * alpha_deg - 9.19e-3 * self.M ** 2
         Cl_del_e = -4.14e-4 * u_deg[0]
         Cl_del_a = -4.14e-4 * u_deg[1]
@@ -67,7 +69,7 @@ class AHV_model:
         Cl = Cl_alpha + Cl_del_e + Cl_del_a + Cl_del_r
         return Cl
 
-    def CY(self, beta_deg, u_deg):
+    def _CY(self, beta_deg, u_deg):
         Cy_beta = -0.292*self.M + 5.48e-2 * self.M**2 - 4.32e-3 * self.M**3
         Cy_del_e = 0
         Cy_del_a = 0
@@ -76,9 +78,11 @@ class AHV_model:
         Cy = Cy_beta * beta_deg + Cy_del_e + Cy_del_a + Cy_del_r
         return Cy
 
-    def Clm(self, alpha_deg, beta_deg, u_deg, TAS, p, r):
+    def _Clm(self, alpha_rad, beta_rad, u_deg, TAS, p, r):
         p *= 57.3
         r *= 57.3
+        alpha_deg = alpha_rad * 57.3
+        beta_deg = beta_rad * 57.3
         Cl_beta = -0.14 + 3.32e-2 * self.M - 7.59e-4 * alpha_deg - 3.79e-3 * self.M ** 2
         Cl_del_e = -1.17e-4 * u_deg[0]
         Cl_del_a = 1.17e-4  * u_deg[1]
@@ -90,8 +94,9 @@ class AHV_model:
         Clm = Cl_beta * beta_deg + Cl_del_e + Cl_del_a + Cl_del_r +  Cl_p * (p * self.b_m / (2*TAS)) + Cl_r * (r * self.b_m / (2*TAS))
         return Clm
 
-    def Cm(self, alpha_deg, u_deg, TAS, q):
+    def _Cm(self, alpha_rad, u_deg, TAS, q):
         q*= 57.3
+        alpha_deg = alpha_rad * 57.3
         Cm_alpha = -2.19e-2 + 7.73e-3 * self.M - 2.26e-3 * alpha_deg
         Cm_del_e = 2.89e-4 * u_deg[0]
         Cm_del_a = 2.89e-4 * u_deg[1]
@@ -103,9 +108,11 @@ class AHV_model:
         Cm = Cm_alpha + Cm_del_e + Cm_del_a + Cm_del_r + Cm_q * (q * self.c_m / (2*TAS))
         return Cm
 
-    def Cn(self, alpha_deg, beta_deg, u_deg, TAS, p, r):
+    def _Cn(self, alpha_rad, beta_rad, u_deg, TAS, p, r):
         p *= 57.3
         r *= 57.3
+        alpha_deg = alpha_rad * 57.3
+        beta_deg = beta_rad * 57.3
         Cn_beta = 5.91e-2 * self.M - 1.48e-2 * self.M**2 + 1.27e-3 * self.M ** 3
         Cn_del_e = 0
         Cn_del_a = 0
@@ -116,3 +123,30 @@ class AHV_model:
 
         Cn = Cn_beta * beta_deg + Cn_del_e + Cn_del_a + Cn_del_r + Cn_p * (p * self.b_m / (2 * TAS)) + Cn_r * (r * self.b_m / (2 * TAS))
         return Cn
+
+    def drag_kgmps2(self):
+        return self._CD * self.qbar_kgpm2 * self.Aref_m2
+
+    def side_kgmps2(self):
+        return self._CY * self.qbar_kgpm2 * self.Aref_m2
+
+    def lift_kgmps2(self):
+        return self._CL * self.qbar_kgpm2 * self.Aref_m2
+
+    def F_b_thrust_N(self):
+        Fx_thrust = self.u_rad[3]*self.T_max_N
+        Fy_thrust = 0
+        Fz_thrust = 0
+
+        return [Fx_thrust, Fy_thrust, Fz_thrust]
+
+    def moments_body_kgmp2ps2(self):
+        Clm= self._Clm(self.alpha_rad, self.beta_rad, self.u_deg, self.TAS_mps, self.p_b_rps, self.r_b_rps)
+        Cm = self._Cm(self.alpha_rad, self.u_deg, self.TAS_mps, self.q_b_rps)
+        Cn = self._Cn(self.alpha_rad, self.beta_rad, self.u_deg, self.TAS_mps, self.p_b_rps, self.r_b_rps)
+        
+        l_b_kgm2ps2 = self.qbar_kgpm2*self.Aref_m2*self.b_m*Clm
+        m_b_kgm2ps2 = self.qbar_kgpm2*self.Aref_m2*self.c_m*Cm
+        n_b_kgm2ps2 = self.qbar_kgpm2*self.Aref_m2*self.b_m*Cn
+
+        return [l_b_kgm2ps2, m_b_kgm2ps2, n_b_kgm2ps2]
