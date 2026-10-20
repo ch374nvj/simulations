@@ -34,6 +34,7 @@ class AHV_model(FixedWing):
         self.Jzz_b_kgm2 = self.Jyy_b_kgm2
         self.Jxz_b_kgm2 = 0
         self.M = 1 # Mach number
+        self.u_rad = self.u_deg = [0,0,0,0]
 
         self.vmod = {
                     "m_kg" : self.m_kg,
@@ -51,8 +52,8 @@ class AHV_model(FixedWing):
     def model_update(self, TAS, c):
         self.M = TAS/c
 
-    def _CD(self, alpha_deg, u_deg) ->  float:
-        Cd_alpha = 8.717e-2 - 3.307e-2 * self.M + 3.179e-2 * alpha_deg + 5.036e-3 * self.M ** 2
+    def _CD(self) ->  float:
+        Cd_alpha = 8.717e-2 - 3.307e-2 * self.M + 3.179e-2 * self.alpha_deg + 5.036e-3 * self.M ** 2
         Cd_del_e = 0
         Cd_del_a = 0
         Cd_del_r = 0
@@ -60,78 +61,68 @@ class AHV_model(FixedWing):
         Cd = Cd_alpha + Cd_del_e + Cd_del_a + Cd_del_r
         return Cd
 
-    def _CL(self, alpha_deg, u_deg) -> float:
-        Cl_alpha = -8.19e-2 + 4.7e-2 * self.M + 1.86e-2 * alpha_deg - 9.19e-3 * self.M ** 2
-        Cl_del_e = -4.14e-4 * u_deg[0]
-        Cl_del_a = -4.14e-4 * u_deg[1]
+    def _CL(self) -> float:
+        Cl_alpha = -8.19e-2 + 4.7e-2 * self.M + 1.86e-2 * self.alpha_deg - 9.19e-3 * self.M ** 2
+        Cl_del_e = -4.14e-4 * self.u_deg[0]
+        Cl_del_a = -4.14e-4 * self.u_deg[1]
         Cl_del_r = 0
 
         Cl = Cl_alpha + Cl_del_e + Cl_del_a + Cl_del_r
         return Cl
 
-    def _CY(self, beta_deg, u_deg):
+    def _CY(self):
         Cy_beta = -0.292*self.M + 5.48e-2 * self.M**2 - 4.32e-3 * self.M**3
         Cy_del_e = 0
         Cy_del_a = 0
-        Cy_del_r = 3.84e-4 * u_deg[2]
+        Cy_del_r = 3.84e-4 * self.u_deg[2]
 
-        Cy = Cy_beta * beta_deg + Cy_del_e + Cy_del_a + Cy_del_r
+        Cy = Cy_beta * self.beta_deg + Cy_del_e + Cy_del_a + Cy_del_r
         return Cy
 
-    def _Clm(self, alpha_rad, beta_rad, u_deg, TAS, p, r):
-        p *= 57.3
-        r *= 57.3
-        alpha_deg = alpha_rad * 57.3
-        beta_deg = beta_rad * 57.3
-        Cl_beta = -0.14 + 3.32e-2 * self.M - 7.59e-4 * alpha_deg - 3.79e-3 * self.M ** 2
-        Cl_del_e = -1.17e-4 * u_deg[0]
-        Cl_del_a = 1.17e-4  * u_deg[1]
-        Cl_del_r = 1.144e-4 * u_deg[2]
+    def _Clm(self):
+        Cl_beta = -0.14 + 3.32e-2 * self.M - 7.59e-4 * self.alpha_deg - 3.79e-3 * self.M ** 2
+        Cl_del_e = -1.17e-4 * self.u_deg[0]
+        Cl_del_a = 1.17e-4  * self.u_deg[1]
+        Cl_del_r = 1.144e-4 * self.u_deg[2]
 
-        Cl_p = -0.299 + 7.47e-2 * self.M + 1.38e-3 * alpha_deg - 9.13e-3 * self.M**2
-        Cl_r = 0.382 - 0.106*self.M + 1.94e-3 * alpha_deg + 1.45e-2 * self.M**2 - 1.02e-3 * self.M**3
+        Cl_p = -0.299 + 7.47e-2 * self.M + 1.38e-3 * self.alpha_deg - 9.13e-3 * self.M**2
+        Cl_r = 0.382 - 0.106*self.M + 1.94e-3 * self.alpha_deg + 1.45e-2 * self.M**2 - 1.02e-3 * self.M**3
         
-        Clm = Cl_beta * beta_deg + Cl_del_e + Cl_del_a + Cl_del_r +  Cl_p * (p * self.b_m / (2*TAS)) + Cl_r * (r * self.b_m / (2*TAS))
+        Clm = Cl_beta * self.beta_deg + Cl_del_e + Cl_del_a + Cl_del_r +  Cl_p * (self.p_deg * self.b_m / (2*self.TAS_mps)) + Cl_r * (self.r_deg * self.b_m / (2*self.TAS_mps))
         return Clm
 
-    def _Cm(self, alpha_rad, u_deg, TAS, q):
-        q*= 57.3
-        alpha_deg = alpha_rad * 57.3
-        Cm_alpha = -2.19e-2 + 7.73e-3 * self.M - 2.26e-3 * alpha_deg
-        Cm_del_e = 2.89e-4 * u_deg[0]
-        Cm_del_a = 2.89e-4 * u_deg[1]
+    def _Cm(self):
+        Cm_alpha = -2.19e-2 + 7.73e-3 * self.M - 2.26e-3 * self.alpha_deg
+        Cm_del_e = 2.89e-4 * self.u_deg[0]
+        Cm_del_a = 2.89e-4 * self.u_deg[1]
         Cm_del_r = 1.58e-3 * self.M**2
 
         Cm_q = -1.36 + 0.38 * self.M - 5.42e-2 * self.M**2 + 3.8e-3 * self.M ** 3
 
         
-        Cm = Cm_alpha + Cm_del_e + Cm_del_a + Cm_del_r + Cm_q * (q * self.c_m / (2*TAS))
+        Cm = Cm_alpha + Cm_del_e + Cm_del_a + Cm_del_r + Cm_q * (self.q_deg * self.c_m / (2*self.TAS_mps))
         return Cm
 
-    def _Cn(self, alpha_rad, beta_rad, u_deg, TAS, p, r):
-        p *= 57.3
-        r *= 57.3
-        alpha_deg = alpha_rad * 57.3
-        beta_deg = beta_rad * 57.3
+    def _Cn(self):
         Cn_beta = 5.91e-2 * self.M - 1.48e-2 * self.M**2 + 1.27e-3 * self.M ** 3
         Cn_del_e = 0
         Cn_del_a = 0
-        Cn_del_r = -5.28e-4 * u_deg[2]
+        Cn_del_r = -5.28e-4 * self.u_deg[2]
 
         Cn_p = 0.368 - 9.79e-2 * self.M + 1.24e-2 * self.M**2
-        Cn_r = -2.41 + 0.596 * self.M - 2.74e-3 * alpha_deg - 7.57e-2 * self.M**2 + 4.9e-3 * self.M**3
+        Cn_r = -2.41 + 0.596 * self.M - 2.74e-3 * self.alpha_deg - 7.57e-2 * self.M**2 + 4.9e-3 * self.M**3
 
-        Cn = Cn_beta * beta_deg + Cn_del_e + Cn_del_a + Cn_del_r + Cn_p * (p * self.b_m / (2 * TAS)) + Cn_r * (r * self.b_m / (2 * TAS))
+        Cn = Cn_beta * self.beta_deg + Cn_del_e + Cn_del_a + Cn_del_r + Cn_p * (self.p_deg * self.b_m / (2 * self.TAS_mps)) + Cn_r * (self.r_deg * self.b_m / (2 * self.TAS_mps))
         return Cn
 
     def drag_kgmps2(self):
-        return self._CD * self.qbar_kgpm2 * self.Aref_m2
+        return self._CD() * self.qbar_kgpm2 * self.Aref_m2
 
     def side_kgmps2(self):
-        return self._CY * self.qbar_kgpm2 * self.Aref_m2
+        return self._CY() * self.qbar_kgpm2 * self.Aref_m2
 
     def lift_kgmps2(self):
-        return self._CL * self.qbar_kgpm2 * self.Aref_m2
+        return self._CL() * self.qbar_kgpm2 * self.Aref_m2
 
     def F_b_thrust_N(self):
         Fx_thrust = self.u_rad[3]*self.T_max_N
@@ -140,10 +131,10 @@ class AHV_model(FixedWing):
 
         return [Fx_thrust, Fy_thrust, Fz_thrust]
 
-    def moments_body_kgmp2ps2(self):
-        Clm= self._Clm(self.alpha_rad, self.beta_rad, self.u_deg, self.TAS_mps, self.p_b_rps, self.r_b_rps)
-        Cm = self._Cm(self.alpha_rad, self.u_deg, self.TAS_mps, self.q_b_rps)
-        Cn = self._Cn(self.alpha_rad, self.beta_rad, self.u_deg, self.TAS_mps, self.p_b_rps, self.r_b_rps)
+    def moments_body_kgm2ps2(self):
+        Clm= self._Clm()
+        Cm = self._Cm()
+        Cn = self._Cn()
         
         l_b_kgm2ps2 = self.qbar_kgpm2*self.Aref_m2*self.b_m*Clm
         m_b_kgm2ps2 = self.qbar_kgpm2*self.Aref_m2*self.c_m*Cm

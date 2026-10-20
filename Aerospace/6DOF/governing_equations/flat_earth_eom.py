@@ -25,10 +25,13 @@ def flat_earth_eom(t: float, x: np.ndarray, u: np.ndarray, amod: dict, vmod) -> 
             x[10]: p2_n_m,    y-axis ^^
             x[11]: p3_n_m,    z-axis ^^
         u (np.ndarray): control vector
+            Typical Fixed Wing:
             u[0] : del_e_rad, Elevator (or right elevon) deflection
             u[1] : del_a_rad, Aileron  (or left elevon)  deflection
             u[2] : del_r_rad, Rudder   deflection
             u[3] : del_Th,    Throttle
+            Multirotor:
+            u[n] : nth rotor in order followed by ardupilot (starting with Front-Right and ending with Rear-Right)
         amod (dict): atmospheric model stored in dict
         vmod (dict): Vehicle (aircraft) model stored in dict
 
