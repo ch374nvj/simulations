@@ -111,7 +111,7 @@ def flat_earth_eom(t: float, x: np.ndarray, u: np.ndarray, amod: dict, vmod) -> 
     gz_b_mps2 = c_phi * c_theta * gz_n_mps2
 
     # Update states to vehicle model for following computations
-    vmod.state_update(alpha_rad, beta_rad, c_interp_mps, qbar_kgpm2, 
+    vmod.state_update(alpha_rad, beta_rad, c_interp_mps, qbar_kgpm2, rho_interp_kgpm3, 
                      TAS_mps, p_b_rps, q_b_rps, r_b_rps, u)
 
     # Aerodynamic forces

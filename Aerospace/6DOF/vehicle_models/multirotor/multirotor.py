@@ -3,11 +3,12 @@ class MultiRotor:
         self.num_rotors = num_rotors
         self.u_vec = [0.0] * num_rotors
 
-    def state_update(self, alpha_rad, beta_rad, c_mps, qbar_kgpm2, 
+    def state_update(self, alpha_rad, beta_rad, c_mps, qbar_kgpm2, rho_kgpm3, 
                      TAS_mps, p_b_rps, q_b_rps, r_b_rps, u_vec):
         self.alpha_rad = alpha_rad
         self.beta_rad = beta_rad
         self.qbar_kgpm2 = qbar_kgpm2
+        self.rho_kgpm3 = rho_kgpm3
         self.TAS_mps = TAS_mps
         self.p_b_rps = p_b_rps
         self.q_b_rps = q_b_rps
