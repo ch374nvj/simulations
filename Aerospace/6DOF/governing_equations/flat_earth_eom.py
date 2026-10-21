@@ -31,7 +31,7 @@ def flat_earth_eom(t: float, x: np.ndarray, u: np.ndarray, amod: dict, vmod) -> 
             u[2] : del_r_rad, Rudder   deflection
             u[3] : del_Th,    Throttle
             Multirotor:
-            u[n] : nth rotor in order followed by ardupilot (starting with Front-Right and ending with Rear-Right)
+            u[n] : nth rotor in clockwise order (starting with Front-Right and ending with Front-Left)
         amod (dict): atmospheric model stored in dict
         vmod (dict): Vehicle (aircraft) model stored in dict
 
@@ -81,6 +81,7 @@ def flat_earth_eom(t: float, x: np.ndarray, u: np.ndarray, amod: dict, vmod) -> 
     # Air data calc
     TAS_mps = math.sqrt(u_b_mps**2 + v_b_mps**2 + w_b_mps**2)
     qbar_kgpm2 = 0.5*rho_interp_kgpm3*TAS_mps**2
+    vel_b_mps = [u_b_mps, v_b_mps, w_b_mps]
 
     if w_b_mps == 0 and u_b_mps == 0:
         w_over_u = 0
@@ -112,7 +113,7 @@ def flat_earth_eom(t: float, x: np.ndarray, u: np.ndarray, amod: dict, vmod) -> 
 
     # Update states to vehicle model for following computations
     vmod.state_update(alpha_rad, beta_rad, c_interp_mps, qbar_kgpm2, rho_interp_kgpm3, 
-                     TAS_mps, p_b_rps, q_b_rps, r_b_rps, u)
+                     vel_b_mps, TAS_mps, p_b_rps, q_b_rps, r_b_rps, u)
 
     # Aerodynamic forces
     drag_kgmps2 = vmod.drag_kgmps2()

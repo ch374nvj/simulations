@@ -3,7 +3,7 @@ class FixedWing:
         pass
 
     def state_update(self, alpha_rad, beta_rad, c_mps, qbar_kgpm2, rho_kgpm3,
-                     TAS_mps, p_b_rps, q_b_rps, r_b_rps, u_rad):
+                     vel_b_mps, TAS_mps, p_b_rps, q_b_rps, r_b_rps, u_rad):
         self.alpha_rad = alpha_rad
         self.beta_rad = beta_rad
         self.alpha_deg = self.alpha_rad * 57.3
@@ -11,6 +11,7 @@ class FixedWing:
         self.qbar_kgpm2 = qbar_kgpm2
         self.rho_kgpm3 = rho_kgpm3
         self.TAS_mps = TAS_mps
+        self.vel_b_mps = vel_b_mps  
         self.p_b_rps = p_b_rps
         self.q_b_rps = q_b_rps
         self.r_b_rps = r_b_rps
