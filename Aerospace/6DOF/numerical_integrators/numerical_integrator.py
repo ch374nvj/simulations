@@ -27,22 +27,27 @@ def forward_euler(f, t_s, x, u, h_s, vmod, amod):
 
     return t_s, x, dx
 
-def rk4(f, t_s, x, u, h_s, vmod, amod):
+def rk4(f, ti, yi, u, h_s, **kwargs):
+    dx = np.empty((12, 1), dtype=float)
+
+    # 4th order RK
+    k1 = f(ti, yi, u, **kwargs)
+    k2 = f(ti + h_s/2, yi + k1*h_s/2, u, **kwargs)
+    k3 = f(ti + h_s/2, yi + k2*h_s/2, u, **kwargs)
+    k4 = f(ti + h_s, yi + k3*h_s, u, **kwargs)
+
+    y = yi + (h_s/6)*(k1 + 2*k2 + 2*k3 + k4)
+    dy= k1 #unintegrated dynamics
+
+    return y, dy
+
+def rk4_timeseries(f, t_s, x, u, h_s, **kwargs):
     dx = np.empty((12, len(t_s)), dtype=float)
 
-    for i in range(1,len(t_s)):
+    for i in range(1, len(t_s)):
         ti = t_s[i-1]
         yi = x[:,i-1]
 
-        # 4th order RK
-        k1 = f(ti, yi, u, amod, vmod)
-        k2 = f(ti + h_s/2, yi + k1*h_s/2, u, amod, vmod)
-        k3 = f(ti + h_s/2, yi + k2*h_s/2, u, amod, vmod)
-        k4 = f(ti + h_s, yi + k3*h_s, u, amod, vmod)
-
-        y = yi + (h_s/6)*(k1 + 2*k2 + 2*k3 + k4)
-        x[:, i] = y
-
-        dx[:,i] = k1 #unintegrated dynamics
+        x[:, i], dx[:, i] = rk4(f, ti, yi, u, h_s, **kwargs)
 
     return t_s, x, dx

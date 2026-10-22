@@ -2,7 +2,7 @@ import math
 import numpy as np
 from tools.Interpolators import interp
 
-def flat_earth_eom(t: float, x: np.ndarray, u: np.ndarray, amod: dict, vmod) -> np.ndarray:
+def flat_earth_eom(t: float, x: np.ndarray, u: np.ndarray, **kwargs) -> np.ndarray:
     """flat_earth_eom.py is a function containing essential elements of a 6DOF 
     simulation. The purpose of this function is to allow the numerical approximation
     of solutions of the governing equations for an aircraft.
@@ -32,13 +32,19 @@ def flat_earth_eom(t: float, x: np.ndarray, u: np.ndarray, amod: dict, vmod) -> 
             u[3] : del_Th,    Throttle
             Multirotor:
             u[n] : nth rotor in clockwise order (starting with Front-Right and ending with Front-Left)
-        amod (dict): atmospheric model stored in dict
-        vmod (dict): Vehicle (aircraft) model stored in dict
+        kwargs:
+            amod (dict): atmospheric model stored in dict
+            vmod (dict): Vehicle (aircraft) model stored in dict
 
     Returns:
         ndarray: dx - Time derivative of each state in x
     """
     dx = np.zeros(12)
+
+    amod = kwargs.get('amod')
+    vmod = kwargs.get('vmod')
+    assert vmod is not None
+    assert amod is not None
 
     # Assign current state vols to variables 
     u_b_mps   = x[0]  

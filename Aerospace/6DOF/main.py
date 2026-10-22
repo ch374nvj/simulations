@@ -91,7 +91,7 @@ def main():
 
     # Assign init condition to soln array
     x[:, 0] = x0
-    t_s, x, dx = numerical_integrator.rk4(flat_earth_eom.flat_earth_eom, t_s, x, u, h_s, vmod=vmod, amod=amod)
+    t_s, x, dx = numerical_integrator.rk4_timeseries(flat_earth_eom.flat_earth_eom, t_s, x, u, h_s, vmod=vmod, amod=amod)
 
     # print(f'Simulated final velo: {x[0, -1]} m/s')
 
@@ -142,7 +142,7 @@ def main():
     # ##########################################################
 
     simulation_test = 'quad_test_hover'
-    test_count = 2
+    test_count = 3
 
     # Subplots
     fig, axes = plt.subplots(2, 4, figsize=(10,6), layout="constrained")
