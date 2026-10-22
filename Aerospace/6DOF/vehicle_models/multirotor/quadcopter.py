@@ -8,15 +8,15 @@
         E. Stingu and F. Lewis, "Design and implementation of a structured flight controller for a 6DoF quadrotor using quaternions" doi: 10.1109/MED.2009.5164715.
 """
 import numpy as np
-from multirotor import MultiRotor
+from .multirotor import MultiRotor
 
 class Quad_X_DJI_Mavic_Pro(MultiRotor):
     """
     Model of DJI Mavic Pro, obtained from https://github.com/souhaiel1/DJI-Mavic-pro-simplified-modelling-and-simulation
     """
 
-    def __init__(self, num_rotors) -> None:
-        super().__init__(num_rotors)
+    def __init__(self) -> None:
+        super().__init__(4)
         self._diagonal_length_m = 0.335
         self._lateral_length_m = 0.237
         self._mass_kg = 0.743
@@ -31,6 +31,28 @@ class Quad_X_DJI_Mavic_Pro(MultiRotor):
         self._Jzz_b_kgm2 = 0.007
         self._Jxz_b_kgm2 = 0.0
         # self._motor_rpm = [0.0] * 4
+
+    # Expose inertia/mass as public attributes expected by the EOM
+    # (flat_earth_eom reads vmod.m_kg, vmod.Jxx_b_kgm2, ...)
+    @property
+    def m_kg(self):
+        return self._mass_kg
+
+    @property
+    def Jxx_b_kgm2(self):
+        return self._Jxx_b_kgm2
+
+    @property
+    def Jyy_b_kgm2(self):
+        return self._Jyy_b_kgm2
+
+    @property
+    def Jzz_b_kgm2(self):
+        return self._Jzz_b_kgm2
+
+    @property
+    def Jxz_b_kgm2(self):
+        return self._Jxz_b_kgm2
 
     def _RPM_model(self, V):
         RPM = -2.6931 * V ** 3 + 1400 * V

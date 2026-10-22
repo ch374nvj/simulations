@@ -20,7 +20,7 @@ References:
         vehicles with state constraints, Control Engineering Practice (2020)
 """
 
-from fixed_wing import FixedWing
+from .fixed_wing import FixedWing
 
 class AHV_model(FixedWing):
     def __init__(self) -> None:

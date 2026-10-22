@@ -8,6 +8,7 @@ from numerical_integrators import numerical_integrator
 from tools.Interpolators import interp
 # from vehicle_models.sphere import spheres
 from vehicle_models.fixed_wing import AHV
+from vehicle_models.multirotor import quadcopter
 
 from tools.profutils import profile
 
@@ -35,15 +36,14 @@ def main():
     }
 
     # vmod: vehicle model
-    vmod = AHV.AHV_model()
-    vmod_dict = vmod.vmod
+    vmod = quadcopter.Quad_X_DJI_Mavic_Pro()
 
     # print(f'Analytical terminal velo: {vmod_dict["Vterm_mps"]:.2f} m/s')
 
     # Setting init conditions or trim conditions
     u0_b_mps   = 0.001  
-    v0_b_mps   = 0
-    w0_b_mps   = 0
+    v0_b_mps   = 0.001
+    w0_b_mps   = 0.001
     p0_b_rps   = 0
     q0_b_rps   = 0
     r0_b_rps   = 0
@@ -52,7 +52,9 @@ def main():
     psi0_rad   = 0
     p10_n_m    = 0
     p20_n_m    = 0
-    p30_n_m    = -10000
+    p30_n_m    = -100
+
+    u = np.array([0.1,0.1,0.2,0.2])
 
     # Assignin' init condtions to the init state array
     x0 = np.array([
@@ -75,7 +77,7 @@ def main():
 
     # Set time conditions
     t0_s = 0.0
-    tf_s = 100.0
+    tf_s = 50.0
     h_s  = 0.01
 
     # ##########################################################
@@ -89,7 +91,6 @@ def main():
 
     # Assign init condition to soln array
     x[:, 0] = x0
-    u = np.array([0.5,-0.5,0,0.25])
     t_s, x, dx = numerical_integrator.rk4(flat_earth_eom.flat_earth_eom, t_s, x, u, h_s, vmod=vmod, amod=amod)
 
     # print(f'Simulated final velo: {x[0, -1]} m/s')
@@ -140,8 +141,8 @@ def main():
     # Part3: Plot Data
     # ##########################################################
 
-    simulation_test = 'ahv_test_roll'
-    test_count = 1
+    simulation_test = 'quad_test_hover'
+    test_count = 2
 
     # Subplots
     fig, axes = plt.subplots(2, 4, figsize=(10,6), layout="constrained")
