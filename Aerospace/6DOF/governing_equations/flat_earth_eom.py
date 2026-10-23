@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from tools.Interpolators import interp
+from ..tools.Interpolators import interp
 
 def flat_earth_eom(t: float, x: np.ndarray, u: np.ndarray, **kwargs) -> np.ndarray:
     """flat_earth_eom.py is a function containing essential elements of a 6DOF 
