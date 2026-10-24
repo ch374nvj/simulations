@@ -1,6 +1,10 @@
 import math
 import numpy as np
-from ..tools.Interpolators import interp
+
+if __package__ == "governing_equations":
+    from tools.Interpolators import interp
+else:
+    from ..tools.Interpolators import interp
 
 def flat_earth_eom(t: float, x: np.ndarray, u: np.ndarray, **kwargs) -> np.ndarray:
     """flat_earth_eom.py is a function containing essential elements of a 6DOF 
@@ -89,7 +93,7 @@ def flat_earth_eom(t: float, x: np.ndarray, u: np.ndarray, **kwargs) -> np.ndarr
     qbar_kgpm2 = 0.5*rho_interp_kgpm3*TAS_mps**2
     vel_b_mps = [u_b_mps, v_b_mps, w_b_mps]
 
-    if w_b_mps == 0 and u_b_mps == 0:
+    if w_b_mps == 0 or u_b_mps == 0:
         w_over_u = 0
     else:
         w_over_u = w_b_mps/u_b_mps
@@ -204,7 +208,8 @@ def flat_earth_eom(t: float, x: np.ndarray, u: np.ndarray, **kwargs) -> np.ndarr
 
     dx[9:] = pos_dot.flatten().tolist()
 
-    if t%10 == 0:
+    verbose = kwargs.get('verbose')
+    if t%10 == 0 and verbose != 0:
         print(t)
 
     return dx

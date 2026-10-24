@@ -4,8 +4,17 @@
 import numpy as np
 from scipy.optimize import least_squares
 import ussa1976
-from ..governing_equations.flat_earth_eom import flat_earth_eom
-from ..vehicle_models.multirotor import quadcopter
+
+if __package__:
+    from ..governing_equations.flat_earth_eom import flat_earth_eom
+    from ..vehicle_models.multirotor import quadcopter
+else:
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from governing_equations.flat_earth_eom import flat_earth_eom
+    from vehicle_models.multirotor import quadcopter
 
 def trim_residuals(op_vec, target_vec, **kwargs):
     """
@@ -26,11 +35,12 @@ def trim_residuals(op_vec, target_vec, **kwargs):
     num_surfaces = kwargs.get('num_surfaces')
 
     if num_rotors is not None:
-        u_vec = op_vec[-num_rotors:]
+        num_ctrl_vars = num_rotors
     if num_surfaces is not None:
-        u_vec = op_vec[-num_surfaces:]
+        num_ctrl_vars = num_surfaces
     else:
-        u_vec = op_vec[-4:] #last 4 elements
+        num_ctrl_vars = 4
+    u_vec = op_vec[-num_ctrl_vars:] #last 4 elements
 
     # states x = [u, v ,w, p, q, r, phi, theta, psi, x, y, h]
     # note not all states will be used by optimizer to obtain trim
@@ -38,14 +48,15 @@ def trim_residuals(op_vec, target_vec, **kwargs):
 
     # Unpacking op_vec and repacking it to states vector
     states = np.zeros(12)
-    phi, theta, u, v, w = op_vec[:5]
+    u, v, w, phi, theta, = op_vec[:5]
     states[:3] = [u, v, w]
     states[6:8] = [phi, theta]
 
     # derivatives dx = [u_dot, v_dot, w_dot, p_dot, q_dot, r_dot, phi_dot, theta_dot, psi_dot, x_dot, y_dot, h_dot]
-    dx = flat_earth_eom(0, states, u_vec, vmod=vmod, amod=amod)
+    dx = flat_earth_eom(0, states, u_vec, vmod=vmod, amod=amod, verbose=0)
 
-    target_optimization = op_vec - target_vec
+    target_optimization = op_vec[:5] - target_vec
+    # print(f'target_op: {target_optimization} \n op_vec: {op_vec}')
 
     residuals = np.append(dx[:6], target_optimization)
 
@@ -71,20 +82,56 @@ def main():
     }
 
     vmod = quadcopter.Quad_X_DJI_Mavic_Pro()
-    num_rotors = vmod.num_rotors
+    num_ctrl_vars = vmod.num_rotors
+    vehicle_name = type(vmod).__name__
 
-    x0 = [0.0] * 5 + [0.0] * num_rotors
-    target_vec = x0
+    x0 = [0.0] * 5 + [100] * num_ctrl_vars
+    target_vec = [0., 0., 0., 0., 0.,] #u, v, w, phi, theta
 
-    result = least_squares(trim_residuals, x0, args=(target_vec,), kwargs={'amod': amod, 'vmod': vmod})
+    lower_bounds = [
+        -20., #u (m/s)
+        -10., #v
+        -10., #w
+        -np.pi/2, #phi (rad)
+        -np.pi/2, #theta
+        0.0, #w1 (rpm)
+        0.0, #w2
+        0.0, #w3
+        0.0, #w4
+    ]
+
+    upper_bounds = [
+        20.,
+        10.,
+        10.,
+        np.pi/2,
+        np.pi/2,
+        12000,
+        12000,
+        12000,
+        12000,
+    ]
+
+    result = least_squares(
+        trim_residuals, x0, args=(target_vec,), kwargs={'amod': amod, 'vmod': vmod},
+        bounds=(lower_bounds, upper_bounds), method='trf',
+        )
 
     if result.success:
         print("trim successful")
         print(f"trim cost: {result.cost}")
-        print(result.x)
-
+        print(f"trim states: {result.x}")
+        trim_control = result.x[-num_ctrl_vars:]
+        np.savetxt(f"{vehicle_name}_trim_ip.csv", trim_control, delimiter=",")
+        np.save(f"{vehicle_name}_trim_ip.npy", trim_control)
+    
     else:
         print('Trim failed to converge')
 
+    print(f'trim message: {result.message}')
+    print('Final residual values (result.fun):', result.fun)
+
 if __name__ == '__main__':
+    # Script must be run as module:
+    # python3 -m 6DOF.tools.trim
     main()
