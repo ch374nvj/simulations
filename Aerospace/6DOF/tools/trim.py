@@ -3,7 +3,6 @@
 """
 import numpy as np
 from scipy.optimize import least_squares
-import ussa1976
 
 if __package__:
     from ..governing_equations.flat_earth_eom import flat_earth_eom
@@ -29,8 +28,6 @@ def trim_residuals(op_vec, target_vec, **kwargs):
             vmod: a vehicle model (vmod) must be passed as an explicit argument
     """
     
-    vmod = kwargs.get('vmod')
-    amod = kwargs.get('amod')
     num_rotors = kwargs.get('num_rotors')
     num_surfaces = kwargs.get('num_surfaces')
 
@@ -55,7 +52,7 @@ def trim_residuals(op_vec, target_vec, **kwargs):
     states[-1] = -alt_t
 
     # derivatives dx = [u_dot, v_dot, w_dot, p_dot, q_dot, r_dot, phi_dot, theta_dot, psi_dot, x_dot, y_dot, h_dot]
-    dx = flat_earth_eom(0, states, u_vec, vmod=vmod, amod=amod, verbose=0)
+    dx = flat_earth_eom(0, states, u_vec, **kwargs)
 
     target_optimization = op_vec[:5] - [u_t, v_t, w_t, phi_t, theta_t]
     # print(f'target_op: {target_optimization} \n op_vec: {op_vec}')
@@ -66,23 +63,6 @@ def trim_residuals(op_vec, target_vec, **kwargs):
 
 
 def main():
-
-    atmosphere = ussa1976.compute()
-    
-    # Essential gravity and atmospheric data
-    amod_alt_m       = atmosphere['z'].values
-    amod_rho_kgpm3   = atmosphere['rho'].values
-    amod_c_mps       = atmosphere['cs'].values
-    amod_g_mps2      = ussa1976.core.compute_gravity(amod_alt_m)
-
-    # amod: atmospheric model with gravity
-    amod = {
-        "alt_m"     : amod_alt_m,
-        "rho_kgpm3" : amod_rho_kgpm3,
-        "c_mps"     : amod_c_mps,
-        "g_mps2"    : amod_g_mps2
-    }
-
     vmod = quadcopter.Quad_X_DJI_Mavic_Pro()
     num_ctrl_vars = vmod.num_rotors
     vehicle_name = type(vmod).__name__
@@ -118,7 +98,7 @@ def main():
     ]
 
     result = least_squares(
-        trim_residuals, x0, args=(target_vec,), kwargs={'amod': amod, 'vmod': vmod},
+        trim_residuals, x0, args=(target_vec,), kwargs={'vmod': vmod, 'verbose':0},
         bounds=(lower_bounds, upper_bounds), method='trf',
         )
 

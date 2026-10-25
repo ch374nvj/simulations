@@ -48,7 +48,7 @@ def flat_earth_eom(t: float, x: np.ndarray, u: np.ndarray, **kwargs) -> np.ndarr
     amod = kwargs.get('amod')
     vmod = kwargs.get('vmod')
     assert vmod is not None
-    assert amod is not None
+
 
     # Assign current state vols to variables 
     u_b_mps   = x[0]  
@@ -82,11 +82,35 @@ def flat_earth_eom(t: float, x: np.ndarray, u: np.ndarray, **kwargs) -> np.ndarr
     
     # current altitude
     h_m = -p3_n_m
-    
-    # Atmosphere model
-    rho_interp_kgpm3 = interp(amod['alt_m'], amod['rho_kgpm3'], h_m)
-    # rho_interp_kgpm3 = 1.2
-    c_interp_mps = interp(amod['alt_m'], amod['c_mps'], h_m)
+
+    if amod is not None:
+        # Atmosphere model
+        # Air density (kg/m^3)
+        rho_interp_kgpm3 = interp(amod['alt_m'], amod['rho_kgpm3'], h_m)
+        # Speed of sound (m/s)
+        c_interp_mps = interp(amod['alt_m'], amod['c_mps'], h_m)
+        # Gravity (m/s^2)
+        gz_n_mps2 = interp(amod['alt_m'], amod['g_mps2'], h_m)
+
+    else:
+        rho_interp_kgpm3 = (1.2250e0 
+           - 1.1210e-4 *   h_m 
+           + 4.4020e-9 *  (h_m**2) 
+           - 1.0260e-13 * (h_m**3) 
+           + 1.6110e-18 * (h_m**4) 
+           - 1.1480e-23 * (h_m**5))
+
+        c_interp_mps = (3.4029e2 
+         - 4.0620e-3 *   h_m 
+         + 1.1440e-8 *  (h_m**2) 
+         - 1.3620e-12 * (h_m**3) 
+         + 5.6880e-17 * (h_m**4) 
+         - 8.2320e-22 * (h_m**5))
+
+        gz_n_mps2 = (9.8067e0 
+         - 3.0860e-6 *   h_m 
+         + 7.2790e-13 * (h_m**2) 
+         - 1.1430e-19 * (h_m**3))
 
     # Air data calc
     TAS_mps = math.sqrt(u_b_mps**2 + v_b_mps**2 + w_b_mps**2)
@@ -114,7 +138,6 @@ def flat_earth_eom(t: float, x: np.ndarray, u: np.ndarray, **kwargs) -> np.ndarr
 
     # Gravity normal to earth tangent
     # gz_n_mps2 = 9.81
-    gz_n_mps2 = interp(amod['alt_m'], amod['g_mps2'], h_m)
 
     # Resolve gravity in body frame
     gx_b_mps2 = -s_theta * gz_n_mps2
