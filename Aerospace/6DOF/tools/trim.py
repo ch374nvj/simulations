@@ -52,7 +52,7 @@ def trim_residuals(op_vec, target_vec, **kwargs):
     u, v, w, phi, theta, = op_vec[:5]
     states[:3] = [u, v, w]
     states[6:8] = [phi, theta]
-    states[-1] = alt_t
+    states[-1] = -alt_t
 
     # derivatives dx = [u_dot, v_dot, w_dot, p_dot, q_dot, r_dot, phi_dot, theta_dot, psi_dot, x_dot, y_dot, h_dot]
     dx = flat_earth_eom(0, states, u_vec, vmod=vmod, amod=amod, verbose=0)
@@ -126,15 +126,24 @@ def main():
         print("trim successful")
         print(f"trim cost: {result.cost}")
         print(f"trim states: {result.x}")
+        print('Final residual values (result.fun):', result.fun)
+        trim_states = np.zeros(12)
+        trim_states[:6] = result.fun[:6]
+        trim_states[-1] = -target_alt_m
         trim_control = result.x[-num_ctrl_vars:]
         np.savetxt(f"{vehicle_name}_trim_ip.csv", trim_control, delimiter=",")
         np.save(f"{vehicle_name}_trim_ip.npy", trim_control)
+        np.savetxt(f"{vehicle_name}_trim_states.csv", trim_states, delimiter=",")
+        np.save(f"{vehicle_name}_trim_states.npy", trim_states)
+        print()
+        np.set_printoptions(precision=4, suppress=True)
+        print(f'Final Trim states: {trim_states}\n')
+        print(f'Final Trim Control: {trim_control}\n')
     
     else:
         print('Trim failed to converge')
 
     print(f'trim message: {result.message}')
-    print('Final residual values (result.fun):', result.fun)
 
 if __name__ == '__main__':
     # Script must be run as module:
