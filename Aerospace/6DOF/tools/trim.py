@@ -40,22 +40,24 @@ def trim_residuals(op_vec, target_vec, **kwargs):
         num_ctrl_vars = num_surfaces
     else:
         num_ctrl_vars = 4
-    u_vec = op_vec[-num_ctrl_vars:] #last 4 elements
+    u_vec = op_vec[-num_ctrl_vars:] #last ctrl elements
 
     # states x = [u, v ,w, p, q, r, phi, theta, psi, x, y, h]
     # note not all states will be used by optimizer to obtain trim
     # And taking only first 6 derivatives for the minimization
 
     # Unpacking op_vec and repacking it to states vector
+    [u_t, v_t, w_t], [phi_t, theta_t], alt_t = target_vec
     states = np.zeros(12)
     u, v, w, phi, theta, = op_vec[:5]
     states[:3] = [u, v, w]
     states[6:8] = [phi, theta]
+    states[-1] = alt_t
 
     # derivatives dx = [u_dot, v_dot, w_dot, p_dot, q_dot, r_dot, phi_dot, theta_dot, psi_dot, x_dot, y_dot, h_dot]
     dx = flat_earth_eom(0, states, u_vec, vmod=vmod, amod=amod, verbose=0)
 
-    target_optimization = op_vec[:5] - target_vec
+    target_optimization = op_vec[:5] - [u_t, v_t, w_t, phi_t, theta_t]
     # print(f'target_op: {target_optimization} \n op_vec: {op_vec}')
 
     residuals = np.append(dx[:6], target_optimization)
@@ -86,7 +88,10 @@ def main():
     vehicle_name = type(vmod).__name__
 
     x0 = [0.0] * 5 + [100] * num_ctrl_vars
-    target_vec = [0., 0., 0., 0., 0.,] #u, v, w, phi, theta
+    target_vel_mps = [0., 0., 0.]
+    target_attitude_rad = [0., 0.]
+    target_alt_m = 200
+    target_vec = [target_vel_mps, target_attitude_rad, target_alt_m] #u, v, w, phi, theta
 
     lower_bounds = [
         -20., #u (m/s)
