@@ -199,7 +199,7 @@ def flat_earth_eom(t: float, x: np.ndarray, u: np.ndarray, **kwargs) -> np.ndarr
     
     # State: q_b_rps
     dx[4] = ((Jzz_b_kgm2 - Jxx_b_kgm2) * r_b_rps * p_b_rps - Jxz_b_kgm2 \
-        * (p_b_rps**2.0 - r_b_rps**2.0) * m_b_kgm2ps2) / Jyy_b_kgm2
+        * (p_b_rps**2.0 - r_b_rps**2.0) + m_b_kgm2ps2) / Jyy_b_kgm2
 
     # State: r_b_rps
     dx[5] = (-Jxz_b_kgm2 * (Jxx_b_kgm2 - Jyy_b_kgm2 + Jzz_b_kgm2 ) * q_b_rps * r_b_rps \
