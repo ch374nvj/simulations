@@ -111,10 +111,10 @@ def main():
         trim_states[:6] = result.fun[:6]
         trim_states[-1] = -target_alt_m
         trim_control = result.x[-num_ctrl_vars:]
-        np.savetxt(f"{vehicle_name}_trim_ip.csv", trim_control, delimiter=",")
-        np.save(f"{vehicle_name}_trim_ip.npy", trim_control)
-        np.savetxt(f"{vehicle_name}_trim_states.csv", trim_states, delimiter=",")
-        np.save(f"{vehicle_name}_trim_states.npy", trim_states)
+        np.savetxt(f"dataset/{vehicle_name}_trim_ip.csv", trim_control, delimiter=",")
+        np.save(f"dataset/{vehicle_name}_trim_ip.npy", trim_control)
+        np.savetxt(f"dataset/{vehicle_name}_trim_states.csv", trim_states, delimiter=",")
+        np.save(f"dataset/{vehicle_name}_trim_states.npy", trim_states)
         print()
         np.set_printoptions(precision=4, suppress=True)
         print(f'Final Trim states: {trim_states}\n')
