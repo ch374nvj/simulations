@@ -225,9 +225,9 @@ def flat_earth_eom(t: float, x: np.ndarray, u: np.ndarray, **kwargs) -> np.ndarr
                       [c_phi*s_psi  , ( c_phi*c_psi + s_phi*s_theta*s_psi), (-s_phi*c_psi + c_phi*s_theta*s_psi)],
                       [-s_theta     ,   s_phi*c_theta,                        c_phi*c_theta                     ]])
 
-    uvw_dot = np.array(dx[:3]).reshape(-1,1)
+    uvw = np.array(x[:3]).reshape(-1,1)
 
-    pos_dot = C_n_b @ uvw_dot 
+    pos_dot = C_n_b @ uvw
 
     dx[9:] = pos_dot.flatten().tolist()
 
