@@ -54,7 +54,13 @@ def main():
     p20_n_m    = 0
     p30_n_m    = -100
 
-    u = np.array([0.1,0.1,0.2,0.2])
+    trim_states = np.load('dataset/Quad_X_DJI_Mavic_Pro_trim_ip.npy')
+    delta = 1
+    u = np.array(trim_states)
+    u[0] += delta
+    u[1] += -delta
+    u[2] += -delta
+    u[3] += delta
 
     # Assignin' init condtions to the init state array
     x0 = np.array([
@@ -77,7 +83,7 @@ def main():
 
     # Set time conditions
     t0_s = 0.0
-    tf_s = 50.0
+    tf_s = 5.0
     h_s  = 0.01
 
     # ##########################################################
@@ -91,7 +97,7 @@ def main():
 
     # Assign init condition to soln array
     x[:, 0] = x0
-    t_s, x, dx = numerical_integrator.rk4_timeseries(flat_earth_eom.flat_earth_eom, t_s, x, u, h_s, vmod=vmod, amod=amod)
+    t_s, x, dx = numerical_integrator.rk4_fixed_ip(flat_earth_eom.flat_earth_eom, t_s, x, u, h_s, vmod=vmod, amod=amod)
 
     # print(f'Simulated final velo: {x[0, -1]} m/s')
 
@@ -141,8 +147,8 @@ def main():
     # Part3: Plot Data
     # ##########################################################
 
-    simulation_test = 'quad_test_hover'
-    test_count = 3
+    simulation_test = 'quad_test_trim_pitch_bwd_perturb'
+    test_count = 1
 
     # Subplots
     fig, axes = plt.subplots(2, 4, figsize=(10,6), layout="constrained")
