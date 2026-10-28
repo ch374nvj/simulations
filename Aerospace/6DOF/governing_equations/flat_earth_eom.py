@@ -121,7 +121,7 @@ def flat_earth_eom(t: float, x: np.ndarray, u: np.ndarray, **kwargs) -> np.ndarr
         w_over_u = 0
     else:
         w_over_u = w_b_mps/u_b_mps
-    alpha_rad = math.atan(w_over_u)
+    alpha_rad = math.atan2(w_b_mps, u_b_mps)
     alpha_deg = alpha_rad * 57.3
 
     if v_b_mps == 0 and TAS_mps == 0:

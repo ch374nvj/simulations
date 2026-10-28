@@ -58,7 +58,7 @@ def rk4_timeseries(f, t_s, x, u, h_s, **kwargs):
     for i in range(1, len(t_s)):
         ti = t_s[i-1]
         yi = x[:,i-1]
-        ui = u[i-1]
+        ui = u[:,i-1]
 
         x[:, i], dx[:, i] = rk4(f, ti, yi, ui, h_s, **kwargs)
     

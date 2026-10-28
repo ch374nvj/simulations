@@ -54,50 +54,68 @@ def main():
     p20_n_m    = 0
     p30_n_m    = -100
 
-    trim_states = np.load('dataset/Quad_X_DJI_Mavic_Pro_trim_ip.npy')
-    delta = 1
-    u = np.array(trim_states)
-    u[0] += delta
-    u[1] += -delta
-    u[2] += -delta
-    u[3] += delta
+    trim_states = np.load('dataset/Quad_X_DJI_Mavic_Pro_trim_states.npy')
+    trim_ip = np.load('dataset/Quad_X_DJI_Mavic_Pro_trim_ip.npy')
+    delta = 500
+    u = np.array(trim_ip)
+    # u[0] += delta
+    # u[1] += -delta
+    # u[2] += -delta
+    # u[3] += delta
 
-    # Assignin' init condtions to the init state array
-    x0 = np.array([
-        u0_b_mps,
-        v0_b_mps,
-        w0_b_mps,
-        p0_b_rps,
-        q0_b_rps,
-        r0_b_rps,
-        phi0_rad,
-        theta0_rad,
-        psi0_rad,
-        p10_n_m,
-        p20_n_m,
-        p30_n_m,
-    ])
+    # # Assignin' init condtions to the init state array
+    # x0 = np.array([
+    #     u0_b_mps,
+    #     v0_b_mps,
+    #     w0_b_mps,
+    #     p0_b_rps,
+    #     q0_b_rps,
+    #     r0_b_rps,
+    #     phi0_rad,
+    #     theta0_rad,
+    #     psi0_rad,
+    #     p10_n_m,
+    #     p20_n_m,
+    #     p30_n_m,
+    # ])
+
+    # Assigning states computed at trim as init states
+    x0 = trim_states
 
     x0 = x0.transpose()
     nx0 = x0.size
 
     # Set time conditions
     t0_s = 0.0
-    tf_s = 5.0
+    tf_s = 50.0
     h_s  = 0.01
+    t_s = np.arange(t0_s, tf_s + h_s, h_s)
+    nt_s = t_s.size
+
+    # Timeseries ctrl input
+    time_data = np.array([0., 9.9, 10., 10.9, 11., 30., 39.9, 40., 41, 50.])
+    u1_ctrl_ip_perturb = np.array([0., 0., -delta, -delta, 0., 0., delta, delta, 0., 0.])
+    u2_ctrl_ip_perturb = np.array([0., 0., delta, delta, 0., 0., -delta, -delta, 0., 0.])
+    u3_ctrl_ip_perturb = np.array([0., 0., delta, delta, 0., 0., -delta, -delta, 0., 0.])
+    u4_ctrl_ip_perturb = np.array([0., 0., -delta, -delta, 0., 0., delta, delta, 0., 0.])
+
+    u = np.zeros((4, nt_s))
+    for i,t in enumerate(t_s):
+        u[0,i] = interp(time_data, u1_ctrl_ip_perturb, t)
+        u[1,i] = interp(time_data, u2_ctrl_ip_perturb, t)
+        u[2,i] = interp(time_data, u3_ctrl_ip_perturb, t)
+        u[3,i] = interp(time_data, u4_ctrl_ip_perturb, t)
 
     # ##########################################################
     # Part2: Numerically approx the governing eqs
     # ##########################################################
 
     # Preallocating soln array
-    t_s = np.arange(t0_s, tf_s + h_s, h_s)
-    nt_s = t_s.size
     x = np.empty((nx0, nt_s), dtype=float)
 
     # Assign init condition to soln array
     x[:, 0] = x0
-    t_s, x, dx = numerical_integrator.rk4_fixed_ip(flat_earth_eom.flat_earth_eom, t_s, x, u, h_s, vmod=vmod, amod=amod)
+    t_s, x, dx = numerical_integrator.rk4_timeseries(flat_earth_eom.flat_earth_eom, t_s, x, u, h_s, vmod=vmod, amod=amod)
 
     # print(f'Simulated final velo: {x[0, -1]} m/s')
 
@@ -147,7 +165,7 @@ def main():
     # Part3: Plot Data
     # ##########################################################
 
-    simulation_test = 'quad_test_trim_pitch_bwd_perturb'
+    simulation_test = 'quad_test_trim_perturb_pitch_doublet'
     test_count = 1
 
     # Subplots
