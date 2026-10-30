@@ -88,8 +88,8 @@ class Quad_X_DJI_Mavic_Pro(MultiRotor):
         motor_lateral_distance = self._lateral_length_m/np.sqrt(2)
 
         l_b_kgm2ps2 = motor_lateral_distance * np.sum(thrust_vec * [-1, -1, 1, 1])
-        m_b_kgm2ps2 = motor_lateral_distance * np.sum(thrust_vec * [-1, 1, 1, -1])
-        n_b_kgm2ps2 = np.sum(self._prop_torque() * [1.0,-1.0,1.0,-1.0])
+        m_b_kgm2ps2 = motor_lateral_distance * np.sum(thrust_vec * [1, -1, -1, 1])
+        n_b_kgm2ps2 = np.sum(self._prop_torque() * [-1.0,1.0,-1.0,1.0])
 
         return [l_b_kgm2ps2, m_b_kgm2ps2, n_b_kgm2ps2]
     

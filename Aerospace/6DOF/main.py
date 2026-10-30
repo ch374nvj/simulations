@@ -87,17 +87,17 @@ def main():
 
     # Set time conditions
     t0_s = 0.0
-    tf_s = 50.0
+    tf_s = 5.0
     h_s  = 0.01
     t_s = np.arange(t0_s, tf_s + h_s, h_s)
     nt_s = t_s.size
 
     # Timeseries ctrl input
-    time_data = np.array([0., 9.9, 10., 10.9, 11., 30., 39.9, 40., 41, 50.])
-    u1_ctrl_ip_perturb = np.array([0., 0., -delta, -delta, 0., 0., delta, delta, 0., 0.])
-    u2_ctrl_ip_perturb = np.array([0., 0., delta, delta, 0., 0., -delta, -delta, 0., 0.])
-    u3_ctrl_ip_perturb = np.array([0., 0., delta, delta, 0., 0., -delta, -delta, 0., 0.])
-    u4_ctrl_ip_perturb = np.array([0., 0., -delta, -delta, 0., 0., delta, delta, 0., 0.])
+    time_data = np.array([0., 1., 1.1, 3., 3.1, 5., 5.1, 8., 8.1, 10.])
+    u1_ctrl_ip_perturb = np.array([0., 0., delta, delta, 0., 0., delta, delta, 0., 0.])
+    u2_ctrl_ip_perturb = np.array([0., 0., -delta, -delta, 0., 0., -delta, -delta, 0., 0.])
+    u3_ctrl_ip_perturb = np.array([0., 0., -delta, -delta, 0., 0., -delta, -delta, 0., 0.])
+    u4_ctrl_ip_perturb = np.array([0., 0., delta, delta, 0., 0., delta, delta, 0., 0.])
 
     u = np.zeros((4, nt_s))
     for i,t in enumerate(t_s):
@@ -105,6 +105,8 @@ def main():
         u[1,i] = interp(time_data, u2_ctrl_ip_perturb, t)
         u[2,i] = interp(time_data, u3_ctrl_ip_perturb, t)
         u[3,i] = interp(time_data, u4_ctrl_ip_perturb, t)
+
+    np.savetxt('dataset/ctrl_ip.csv', u.T, header=('m1,m2,m3,m4'), delimiter=',')
 
     # ##########################################################
     # Part2: Numerically approx the governing eqs
@@ -166,7 +168,7 @@ def main():
     # ##########################################################
 
     simulation_test = 'quad_test_trim_perturb_pitch_doublet'
-    test_count = 1
+    test_count = 3
 
     # Subplots
     fig, axes = plt.subplots(2, 4, figsize=(10,6), layout="constrained")
@@ -300,6 +302,28 @@ def main():
     axes3[2].tick_params(colors='white')
 
     plt.savefig(f'savefig/{simulation_test}_{test_count}_uvw_dot.png')
+
+    # ##########################################################
+    # Part4: Export Data
+    # ##########################################################
+
+    headers = (
+    "time_s,u_b_mps,v_b_mps,w_b_mps,"
+    "p_b_radps,q_b_radps,r_b_radps,"
+    "phi_rad,theta_rad,psi_rad,"
+    "p1_n_m,p2_n_m,p3_n_m"
+    )
+
+    data = np.column_stack((t_s, x.T))
+
+    np.savetxt(
+    f"dataset/simulation_output_{simulation_test}_{test_count}.csv",
+    data,
+    delimiter=",",
+    header=headers,
+    comments="", 
+    fmt="%.10g",
+    )
 
 if __name__ == "__main__":
     main()
