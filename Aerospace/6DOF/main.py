@@ -87,17 +87,17 @@ def main():
 
     # Set time conditions
     t0_s = 0.0
-    tf_s = 5.0
+    tf_s = 10.
     h_s  = 0.01
     t_s = np.arange(t0_s, tf_s + h_s, h_s)
     nt_s = t_s.size
 
     # Timeseries ctrl input
     time_data = np.array([0., 1., 1.1, 3., 3.1, 5., 5.1, 8., 8.1, 10.])
-    u1_ctrl_ip_perturb = np.array([0., 0., delta, delta, 0., 0., delta, delta, 0., 0.])
-    u2_ctrl_ip_perturb = np.array([0., 0., -delta, -delta, 0., 0., -delta, -delta, 0., 0.])
-    u3_ctrl_ip_perturb = np.array([0., 0., -delta, -delta, 0., 0., -delta, -delta, 0., 0.])
-    u4_ctrl_ip_perturb = np.array([0., 0., delta, delta, 0., 0., delta, delta, 0., 0.])
+    u1_ctrl_ip_perturb = np.array([0., 0., -delta, -delta, 0., 0., delta, delta, 0., 0.])
+    u2_ctrl_ip_perturb = np.array([0., 0., delta, delta, 0., 0., -delta, -delta, 0., 0.])
+    u3_ctrl_ip_perturb = np.array([0., 0., -delta, -delta, 0., 0., delta, delta, 0., 0.])
+    u4_ctrl_ip_perturb = np.array([0., 0., delta, delta, 0., 0., -delta, -delta, 0., 0.])
 
     u = np.zeros((4, nt_s))
     for i,t in enumerate(t_s):
@@ -167,8 +167,8 @@ def main():
     # Part3: Plot Data
     # ##########################################################
 
-    simulation_test = 'quad_test_trim_perturb_pitch_doublet'
-    test_count = 3
+    simulation_test = 'quad_test_trim_perturb_yaw'
+    test_count = 1
 
     # Subplots
     fig, axes = plt.subplots(2, 4, figsize=(10,6), layout="constrained")
@@ -231,10 +231,10 @@ def main():
     axes[1,2].set_facecolor('black')
     axes[1,2].tick_params(colors='white')
 
-    # pitch, theta
-    axes[1,3].plot(t_s, x[7,:], label='theta', color='red')
+    # yaw, psi
+    axes[1,3].plot(t_s, x[8,:], label='psi', color='red')
     axes[1,3].set_xlabel('Time (sec)', color='white')
-    axes[1,3].set_ylabel('theta [rad]', color='white')
+    axes[1,3].set_ylabel('psi [rad]', color='white')
     axes[1,3].grid(True)
     axes[1,3].set_facecolor('black')
     axes[1,3].tick_params(colors='white')
