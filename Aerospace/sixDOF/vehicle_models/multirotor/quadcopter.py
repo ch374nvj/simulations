@@ -54,6 +54,14 @@ class Quad_X_DJI_Mavic_Pro(MultiRotor):
     def Jxz_b_kgm2(self):
         return self._Jxz_b_kgm2
 
+    @property
+    def x_trim(self):
+        return np.array([-2.794549854962312e-23, 7.99351780660284e-23, 1.7763568394002505e-15, -7.442238254161093e-14, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -200.0])
+
+    @property
+    def u_trim(self):
+        return np.array([5597.11274931, 5597.11274931, 5597.11274931, 5597.11274931])
+    
     def _RPM_model(self, V):
         RPM = -2.6931 * V ** 3 + 1400 * V
         return RPM
