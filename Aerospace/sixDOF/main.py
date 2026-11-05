@@ -94,10 +94,10 @@ def main():
 
     # Timeseries ctrl input
     time_data = np.array([0., 1., 1.1, 3., 3.1, 5., 5.1, 8., 8.1, 10.])
-    u1_ctrl_ip_perturb = np.array([0., 0., -delta, -delta, 0., 0., delta, delta, 0., 0.])
-    u2_ctrl_ip_perturb = np.array([0., 0., delta, delta, 0., 0., -delta, -delta, 0., 0.])
-    u3_ctrl_ip_perturb = np.array([0., 0., -delta, -delta, 0., 0., delta, delta, 0., 0.])
-    u4_ctrl_ip_perturb = np.array([0., 0., delta, delta, 0., 0., -delta, -delta, 0., 0.])
+    u1_ctrl_ip_perturb = trim_ip[0] + np.array([0., 0., -delta, -delta, 0., 0., delta, delta, 0., 0.])
+    u2_ctrl_ip_perturb = trim_ip[1] + np.array([0., 0., delta, delta, 0., 0., -delta, -delta, 0., 0.])
+    u3_ctrl_ip_perturb = trim_ip[2] + np.array([0., 0., -delta, -delta, 0., 0., delta, delta, 0., 0.])
+    u4_ctrl_ip_perturb = trim_ip[3] + np.array([0., 0., delta, delta, 0., 0., -delta, -delta, 0., 0.])
 
     u = np.zeros((4, nt_s))
     for i,t in enumerate(t_s):
