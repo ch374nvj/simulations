@@ -19,7 +19,7 @@ def forward_euler(f, t_s, x, u, h_s, vmod, amod):
     """
     
     # Fwd Euler numerical integration
-    dx = np.empty((12, len(t_s)), dtype=float)
+    dx = np.empty((len(x), len(t_s)), dtype=float)
 
     for i in range(1, len(t_s)):
         dx[:, i] = f(t_s[i-1], x[:, i-1], u, amod, vmod)
@@ -28,7 +28,7 @@ def forward_euler(f, t_s, x, u, h_s, vmod, amod):
     return t_s, x, dx
 
 def rk4(f, ti, yi, u, h_s, **kwargs):
-    dx = np.empty((12, 1), dtype=float)
+    dx = np.empty((len(yi), 1), dtype=float)
 
     # 4th order RK
     k1 = f(ti, yi, u, **kwargs)
@@ -42,7 +42,7 @@ def rk4(f, ti, yi, u, h_s, **kwargs):
     return y, dy
 
 def rk4_fixed_ip(f, t_s, x, u, h_s, **kwargs):
-    dx = np.empty((12, len(t_s)), dtype=float)
+    dx = np.empty((len(x), len(t_s)), dtype=float)
 
     for i in range(1, len(t_s)):
         ti = t_s[i-1]
@@ -53,7 +53,7 @@ def rk4_fixed_ip(f, t_s, x, u, h_s, **kwargs):
     return t_s, x, dx
 
 def rk4_timeseries(f, t_s, x, u, h_s, **kwargs):
-    dx = np.empty((12, len(t_s)), dtype=float)
+    dx = np.empty((len(x), len(t_s)), dtype=float)
 
     for i in range(1, len(t_s)):
         ti = t_s[i-1]
