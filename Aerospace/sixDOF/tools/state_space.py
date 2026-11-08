@@ -1,5 +1,5 @@
 import numpy as np
-from ..numerical_integrators.numerical_integrator import rk4
+from numerical_integrators.numerical_integrator import rk4
 
 class StateSpace:
     """
@@ -25,7 +25,8 @@ class StateSpace:
     def _derivatives(self, t, x, u):
         return self.A @ x + self.B @ u
 
-    def outputs(self, u):
+    def outputs(self, x, u):
+        self._derivatives(0., x, u)
         return self.C @ self.x + self.D @ u
 
     def step(self, u):
