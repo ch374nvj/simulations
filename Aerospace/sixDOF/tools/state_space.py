@@ -1,5 +1,16 @@
 import numpy as np
-from numerical_integrators.numerical_integrator import rk4
+
+import sys
+from pathlib import Path
+
+# 1. Dynamically find the submodule root folder regardless of execution context
+# Adjust .parents[N] depending on how deep this file is nested inside the submodule
+root = Path(__file__).resolve().parent.parent  # Points to 'root'
+
+if str(root) not in sys.path:
+    sys.path.insert(0, str(root))
+
+from simulations.Aerospace.sixDOF.numerical_integrators.numerical_integrator import rk4
 
 class StateSpace:
     """

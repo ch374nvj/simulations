@@ -71,9 +71,9 @@ def main():
     print(B)
 
     # states, x = [u v w p q r phi theta psi x y h]
-    lon_index = [1, 3, 4, 7] # u,w,q,theta
+    lon_index = [0, 2, 4, 7] # u,w,q,theta
 
-    lat_index = [1,3,5,6,8] #v,p,r,phi,theta
+    lat_index = [1,3,5,6,8] #v,p,r,phi,psi
 
     # Longitudinal state-space
     Alon = A[np.ix_(lon_index, lon_index)]
