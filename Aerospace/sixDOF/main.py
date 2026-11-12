@@ -106,8 +106,6 @@ def main():
         u[2,i] = interp(time_data, u3_ctrl_ip_perturb, t)
         u[3,i] = interp(time_data, u4_ctrl_ip_perturb, t)
 
-    np.savetxt('dataset/ctrl_ip.csv', u.T, header=('m1,m2,m3,m4'), delimiter=',')
-
     # ##########################################################
     # Part2: Numerically approx the governing eqs
     # ##########################################################
@@ -301,7 +299,7 @@ def main():
     axes3[2].set_facecolor('black')
     axes3[2].tick_params(colors='white')
 
-    plt.savefig(f'savefig/{simulation_test}_{test_count}_uvw_dot.png')
+    plt.savefig(f'savefig/nonlinear/{simulation_test}_{test_count}_uvw_dot.png')
 
     # ##########################################################
     # Part4: Export Data
@@ -312,9 +310,10 @@ def main():
     "p_b_radps,q_b_radps,r_b_radps,"
     "phi_rad,theta_rad,psi_rad,"
     "p1_n_m,p2_n_m,p3_n_m"
+    "u1,u2,u3,u4"
     )
 
-    data = np.column_stack((t_s, x.T))
+    data = np.column_stack((t_s, x.T, u.T))
 
     np.savetxt(
     f"dataset/simulation_output_{simulation_test}_{test_count}.csv",
