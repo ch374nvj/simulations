@@ -33,6 +33,11 @@ class StateSpace:
         # State is represented as deviation from trim
         self.x = np.zeros(self.n_states)
 
+    def __str__(self):
+        np.set_printoptions(precision=8, suppress=True)
+
+        return f"A:\n{self.A} \n B:\n{self.B} \n C:\n{self.C} \n D:\n{self.D}"
+
     def _derivatives(self, t, x, u):
         return self.A @ x + self.B @ u
 
